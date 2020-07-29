@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AntBlazor
+namespace AntDesign
 {
-    public class CheckBoxOption
+    public class CheckboxOption
     {
-        public string label { get; set; }
+        public string Label { get; set; }
 
-        public string value { get; set; }
-        public bool @checked { get; set; }
-        public bool disabled { get; set; }
+        public string Value { get; set; }
+
+        public bool Checked { get; set; }
+
+        public bool Disabled { get; set; }
     }
 }

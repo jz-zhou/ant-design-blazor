@@ -1,7 +1,11 @@
-﻿namespace AntBlazor.JsInterop
+﻿namespace AntDesign.JsInterop
 {
     public class Element
     {
+        public int absoluteTop { get; set; }
+
+        public int absoluteLeft { get; set; }
+
         public int offsetTop { get; set; }
 
         public int offsetLeft { get; set; }

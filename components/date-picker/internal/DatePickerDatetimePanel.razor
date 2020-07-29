@@ -1,0 +1,163 @@
+﻿@namespace AntDesign.Internal
+@typeparam TValue
+@inherits DatePickerPanelBase<TValue>
+@using System.Globalization;
+
+@{
+    var calendar = this.DatePicker.CultureInfo.Calendar;
+
+    DateTime monthFirstDayDate = new DateTime(PickerValue.Year, PickerValue.Month, 1, 0, 0, 0);
+    DayOfWeek monthFirstDayOfWeek = calendar.GetDayOfWeek(monthFirstDayDate);
+
+    int diffDay = (int)this.DatePicker.CultureInfo.DateTimeFormat.FirstDayOfWeek - (int)monthFirstDayOfWeek;
+    DateTime startDate = monthFirstDayDate.AddDays(diffDay);
+
+}
+
+<div class='@($"{PrefixCls}-datetime-panel")'>
+    @if (IsShowTime)
+    {
+        <DatePickerTemplate TValue="TValue" 
+                            @attributes="GetAttritubes()"
+                            MaxRow="6"
+                            MaxCol="7"
+                            ViewStartDate="startDate"
+                            ShowFooter="@ShowToday"
+                            IsInView="date => DateHelper.IsSameMonth(date, PickerValue)"
+                            IsToday="date => DateHelper.IsSameDay(date, DatePicker.CurrentDate)"
+                            IsSelected="date => DateHelper.IsSameDay(date, Value)"
+                            GetColTitle='date => date.ToString(this.DatePicker.CultureInfo.GetDateLocale().DateFormat, this.DatePicker.CultureInfo)'
+                            OnValueSelect="OnSelectDate"
+                            GetNextColValue="date => date.AddDays(1)">
+            <RenderPickerHeader>
+                <DatePickerHeader TValue="TValue"
+                                  @attributes="GetAttritubes()" />
+            </RenderPickerHeader>
+            <RenderTableHeader>
+                <tr>
+                    @foreach(string weekDay in this.DatePicker.CultureInfo.GetDateLocale().ShortWeekDays)
+                    {
+                        <th>@weekDay</th>
+                    }
+                </tr>
+            </RenderTableHeader>
+            <RenderColValue Context="currentColDate">
+                @currentColDate.Day
+            </RenderColValue>
+        </DatePickerTemplate>
+    }
+
+    @{
+        var startTime = new DateTime(2020, 1, 1, 0, 0, 0);
+        var timeFormat = ShowTimeFormat;
+
+        if (Picker == DatePickerType.Time && !string.IsNullOrEmpty(Format))
+        {
+            timeFormat = Format;
+        }
+
+        DatePickerDisabledTime disabledTime = GetDisabledTime();
+    }
+    <div class="@(PrefixCls)-time-panel">
+        @if(Picker == DatePickerType.Date)
+        {
+            <div class="@(PrefixCls)-header">
+                <div class="@(PrefixCls)-header-view">
+                    @Value.ToString(timeFormat) <br />
+                </div>
+            </div>
+        }
+        
+        <div class="@(PrefixCls)-content">
+            @if (timeFormat.ToLower().Contains("hh"))
+            {
+                <ul class="@(PrefixCls)-time-panel-column" style="position: relative;">
+                    @for (int hour = 0; hour < 24; hour++)
+                    {
+                        var viewTime = startTime;
+                        bool disabled = disabledTime._disabledHours.Contains(hour);
+                        string isSelectedCls = viewTime.Hour == Value.Hour ? $"{PrefixCls}-time-panel-cell-selected" : "";
+                        string disabledCls = disabled ? $"{PrefixCls}-time-panel-cell-disabled" : "";
+
+                        <li class="@(PrefixCls)-time-panel-cell @isSelectedCls @disabledCls">
+                            <div class="@(PrefixCls)-time-panel-cell-inner"
+                                 @onclick="e => { if (!disabled) OnSelectHour(viewTime); }">
+                                @hour
+                            </div>
+                        </li>
+
+                        startTime = startTime.AddHours(1);
+                    }
+                </ul>
+            }
+            @if (timeFormat.ToLower().Contains("mm"))
+            {
+                <ul class="@(PrefixCls)-time-panel-column" style="position: relative;">
+                    @for (int minute = 0; minute < 60; minute++)
+                    {
+                        var viewTime = startTime;
+                        bool disabled = disabledTime._disabledMinutes.Contains(minute);
+                        string isSelectedCls = viewTime.Minute == Value.Minute ? $"{PrefixCls}-time-panel-cell-selected" : "";
+                        string disabledCls = disabled ? $"{PrefixCls}-time-panel-cell-disabled" : "";
+
+                        <li class="@(PrefixCls)-time-panel-cell @isSelectedCls @disabledCls">
+                            <div class="@(PrefixCls)-time-panel-cell-inner"
+                                 @onclick="e => { if (!disabled) OnSelectMinute(viewTime); }">
+                                @minute
+                            </div>
+                        </li>
+
+                        startTime = startTime.AddMinutes(1);
+                    }
+                </ul>
+            }
+            @if (timeFormat.ToLower().Contains("ss"))
+            {
+                <ul class="@(PrefixCls)-time-panel-column" style="position: relative;">
+                    @for (int second = 0; second < 60; second++)
+                    {
+                        var viewTime = startTime;
+                        bool disabled = disabledTime._disabledSeconds.Contains(second);
+                        string isSelectedCls = viewTime.Second == Value.Second ? $"{PrefixCls}-time-panel-cell-selected" : "";
+                        string disabledCls = disabled ? $"{PrefixCls}-time-panel-cell-disabled" : "";
+
+                        <li class="@(PrefixCls)-time-panel-cell @isSelectedCls @disabledCls">
+                            <div class="@(PrefixCls)-time-panel-cell-inner"
+                                 @onclick="e => { if (!disabled) OnSelectSecond(viewTime); }">
+                                @second
+                            </div>
+                        </li>
+
+                        startTime = startTime.AddSeconds(1);
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+</div>
+
+@if (RenderExtraFooter != null)
+{
+    <div class="@(PrefixCls)-footer">
+        <div class="@(PrefixCls)-footer-extra">
+            @RenderExtraFooter
+        </div>
+    </div>
+}
+
+<div class="@(PrefixCls)-footer">
+    <ul class="@(PrefixCls)-ranges">
+        <li class="@(PrefixCls)-now">
+            <a class="@(PrefixCls)-now-btn"
+               @onclick="e => { OnSelectTime(DateTime.Now); Close(); }">
+                @this.DatePicker.CultureInfo.GetDateLocale().Now
+            </a>
+        </li>
+        <li class="@(PrefixCls)-ok">
+            <Button Type="@ButtonType.Primary"
+                       OnClick="e => DatePicker.Close()">
+                @this.DatePicker.CultureInfo.GetDateLocale().Ok
+            </Button>
+        </li>
+    </ul>
+</div>

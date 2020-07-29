@@ -1,21 +1,22 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using YamlDotNet.Serialization;
 
-namespace AntBlazor.Docs.Localization
+namespace AntDesign.Docs.Localization
 {
     public class Resources
     {
-        private Dictionary<string, string> keyValues = null;
+        private Dictionary<string, string> _keyValues = null;
 
         public Resources(string languageContent)
         {
-            initialize(languageContent);
+            Initialize(languageContent);
         }
 
-        private void initialize(string languageContent)
+        private void Initialize(string languageContent)
         {
-            keyValues = new Deserializer().Deserialize<Dictionary<string, string>>(languageContent).Select(k => new { Key = k.Key.ToLower(), Value = k.Value }).ToDictionary(t => t.Key, t => t.Value);
+            _keyValues = languageContent.Split('\n').Select(line => line.Split(":")).ToList()
+                .ToDictionary(x => x[0].ToLower(), x => x.Length == 2 ? x[1].Trim(' ', '\r') : "");
         }
 
         public string this[string key]
@@ -24,10 +25,11 @@ namespace AntBlazor.Docs.Localization
             {
                 try
                 {
-                    return keyValues[key.ToLower()];
+                    return _keyValues[key.ToLower()];
                 }
-                catch
+                catch (Exception e)
                 {
+                    Console.WriteLine(e.Message);
                     return key;
                 }
             }

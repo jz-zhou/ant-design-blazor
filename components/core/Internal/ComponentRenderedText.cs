@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace AntBlazor
+namespace AntDesign
 {
-    public readonly struct ComponentRenderedText
+    public class ComponentRenderedText
     {
         public ComponentRenderedText(int componentId, IEnumerable<string> tokens)
         {
